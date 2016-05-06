@@ -1,7 +1,7 @@
 ; ----------------------------------------------------------------------------------------
 ; Analisi dati della esperienza 15. Linux 64 bit
 ; 
-;Assembla ed esegue;
+;Assembla ed esegue:
 ;     nasm -felf64 esp15.asm && gcc esp15.o && ./a.out
 ; ----------------------------------------------------------------------------------------
         global  main
@@ -128,11 +128,11 @@ print_conc:
 
 ; calcoli con la fpu
         ;printa il quarto messaggio
-        mov     rax, 1                  ; system call write
-        mov     rdi, 1                  ; standard output
-        mov     rsi, msg4         
-        mov     rdx, 22                 ; byte della stringa
-        syscall                         ; system call
+        ;mov     rax, 1                  ; system call write
+        ;mov     rdi, 1                  ; standard output
+        ;mov     rsi, msg4         
+        ;mov     rdx, 22                 ; byte della stringa
+        ;syscall                         ; system call
 
         xor     ecx,ecx
 log_loop_red:
@@ -152,7 +152,7 @@ log_loop_red:
         mov     rdi, fmt                ; formato
         movq    xmm0, qword [red_laser+ecx*8]; numero
         mov     rax, 1                  ;abbiamo usato un reistro xmm
-        call    printf                  
+        ;call    printf                  
 
         pop     rcx                     ; ripristiniamo il registro
         pop     rax                     ; ripristiniamo il registro
@@ -162,11 +162,11 @@ log_loop_red:
         jb     log_loop_red            ; jump se ecx<8
 
 ;printa il quinto messaggio
-        mov     rax, 1                  ; system call write
-        mov     rdi, 1                  ; standard output
-        mov     rsi, msg5         
-        mov     rdx, 27                 ; byte della stringa
-        syscall                         ; system call
+        ;mov     rax, 1                  ; system call write
+        ;mov     rdi, 1                  ; standard output
+        ;mov     rsi, msg5         
+        ;mov     rdx, 27                 ; byte della stringa
+        ;syscall                         ; system call
 
         xor     ecx,ecx
 log_loop_orange:
