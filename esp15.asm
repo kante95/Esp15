@@ -20,6 +20,10 @@ msg4:
         db "Logaritmo laser rosso",10,0 
 msg5:
         db "Logaritmo laser arancione:",10,0 
+k_red:
+        db "Costante k per il laser rosso: %lf",10,0
+k_orange:
+        db "Costante k per il laser arancione: %lf",10,0
 fmt:
         db "%lf",10, 0          ; The printf format, "\n",'0'
 stampa_a_b:
@@ -36,6 +40,10 @@ eight:
         dq 8.0
 zero:
         dq 0.0
+L:
+        dq 0.0104
+minus_one:
+        dq -1.0
 
 ;section .bss
 ;   result: resq 1     ;quadword per i risultati
@@ -51,7 +59,7 @@ main:
         mov     rdi, 1                  ; standard output
         mov     rsi, msg1               
         mov     rdx, 18                 ; byte della stringa
-        syscall                         ; system call
+        ;syscall                         ; system call
 
         xor     ecx, ecx                ; ecx fa da contatore, azzeriamolo
 
@@ -63,21 +71,21 @@ print_red:
         mov     rdi, fmt                ; formato
         movq    xmm0, qword [red_laser+8*ecx]; numero
         mov     rax, 1                  ;abbiamo usato un reistro xmm
-        call    printf                  
+        ;call    printf                  
 
         pop     rcx                     ; ripristiniamo il registro
         pop     rax                     ; ripristiniamo il registro
 
         inc     ecx                     ; incrementiamo il contatore
         cmp     ecx,8                   ; loop su 8 elementi
-        jb     print_red                  ; jump se ecx<8
+        ;jb     print_red                  ; jump se ecx<8
 
         ;printa il secondo messaggio
         mov     rax, 1                  ; system call write
         mov     rdi, 1                  ; standard output
         mov     rsi, msg2          
         mov     rdx, 21                 ; byte della stringa
-        syscall                         ; system call
+        ;syscall                         ; system call
 
         xor     ecx, ecx                 ; ecx fa da contatore, azzeriamolo
 
@@ -90,21 +98,21 @@ print_orange:
         mov     rdi, fmt                ; formato
         movq    xmm0, qword [orange_laser+8*ecx]; numero
         mov     rax, 1                  ;abbiamo usato un reistro xmm
-        call    printf                  
+        ;call    printf                  
 
         pop     rcx                     ; ripristiniamo il registro
         pop     rax                     ; ripristiniamo il registro
 
         inc     ecx                     ; incrementiamo il contatore
         cmp     ecx,8                   ; loop su 8 elementi
-        jb     print_orange             ; jump se ecx<8
+        ;jb     print_orange             ; jump se ecx<8
 
         ;printa il terzo messaggio
         mov     rax, 1                  ; system call write
         mov     rdi, 1                  ; standard output
         mov     rsi, msg3         
         mov     rdx, 15                 ; byte della stringa
-        syscall                         ; system call
+        ;syscall                         ; system call
 
         xor     ecx,ecx
 
@@ -116,14 +124,14 @@ print_conc:
         mov     rdi, fmt                ; formato
         movq    xmm0, qword [concentrazioni+8*ecx]; numero
         mov     rax, 1                  ;abbiamo usato un reistro xmm
-        call    printf                  
+        ;call    printf                  
 
         pop     rcx                     ; ripristiniamo il registro
         pop     rax                     ; ripristiniamo il registro
 
         inc     ecx                     ; incrementiamo il contatore
         cmp     ecx,8                   ; loop su 8 elementi
-        jb     print_conc             ; jump se ecx<8
+       ; jb     print_conc             ; jump se ecx<8
 
 
 ; calcoli con la fpu
@@ -269,11 +277,13 @@ sum_x_y:
         ;xmm8 = b!  xmm7 = a! ;xmm1 = sum(w),xmm0 = sum(x^2), xmm3 = sum(x), xmm4 = nabla xmm5 = sum(y) xmm6 = sum(xy)
 
         ;stampa il risultato
-        mov     rdi, stampa_a_b               
-        movq    xmm0,xmm7
-        movq    xmm1,xmm8
-        mov     rax, 2                  ;abbiamo usato due registri xmm
+        divsd   xmm8,[L]        ;k_red = abs(m_red / L)  
+        mulsd   xmm8,[minus_one] 
+        mov     rdi, k_red          
+        movq    xmm0,xmm8
+        mov     rax, 1
         call    printf         
+
 
 
 ;Linear Fitting!!!!!! ORANGE LASER
@@ -354,11 +364,12 @@ sum_x_y_orange:
         ;xmm8 = b!  xmm7 = a! ;xmm1 = sum(w),xmm0 = sum(x^2), xmm3 = sum(x), xmm4 = nabla xmm5 = sum(y) xmm6 = sum(xy)
 
         ;stampa il risultato
-        mov     rdi, stampa_a_b               
-        movq    xmm0,xmm7
-        movq    xmm1,xmm8
-        mov     rax, 2                  ;abbiamo usato due registri xmm
-        call    printf         
+        divsd   xmm8,[L]        ;k_red = abs(m_red / L)  
+        mulsd   xmm8,[minus_one] 
+        mov     rdi, k_orange          
+        movq    xmm0,xmm8
+        mov     rax, 1
+        call    printf      
 
         pop     rbx                     ; ripristino rbx
         ret
