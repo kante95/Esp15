@@ -104,7 +104,7 @@ log_loop:
         ret
 ;--------------------------------------------------------------------
 
-;Linear fitting y=a+bx, x value in rdi, a in xmm0, b in xmm1
+;Linear fitting y=a+bx, y value in rdi, a in xmm0, b in xmm1
 linear_regression:
         push    rbp
         push    rcx
