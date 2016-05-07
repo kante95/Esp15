@@ -32,6 +32,8 @@ orange_laser:
         dq 1392.0, 1115.0, 883.0, 660.0, 340.0, 200.0, 140.0, 94.0
 log_2e:
         dq 1.4425454561053044
+log_e2:
+        dq 0.6931471805599453
 eight:
         dq 8.0
 zero:
@@ -128,22 +130,20 @@ print_conc:
 
 ; calcoli con la fpu
         ;printa il quarto messaggio
-        ;mov     rax, 1                  ; system call write
-        ;mov     rdi, 1                  ; standard output
-        ;mov     rsi, msg4         
-        ;mov     rdx, 22                 ; byte della stringa
-        ;syscall                         ; system call
+        mov     rax, 1                  ; system call write
+        mov     rdi, 1                  ; standard output
+        mov     rsi, msg4         
+        mov     rdx, 22                 ; byte della stringa
+        syscall                         ; system call
 
         xor     ecx,ecx
 log_loop_red:
         ;logaritmo in base e 
-        fld1                            ;st0 = 1
-        fld qword [red_laser+ecx*8]           ;st0 = x st1 = 1
-        fyl2x                           ;st0 = log_2(x)        
-        fld qword [log_2e]              ;st0 = log_2(e), st1 = log_2(x)
-        fdivr st1                       ;st0 = log_2(x)/log_2(e)
+        fld qword [log_e2]              ;st0 = ln2
+        fld qword [red_laser+ecx*8]     ;st0 = x st1 = ln2
+        fyl2x                           ;st0 = ln2*log_2(x)        
         fstp qword [red_laser+ecx*8]
-        fstp                            ;puliamo lo stack della fpu
+        ;fstp                            ;puliamo lo stack della fpu
 
         push    rax                     ; salviamo il registro
         push    rcx                     ; salviamo il registro
@@ -152,7 +152,7 @@ log_loop_red:
         mov     rdi, fmt                ; formato
         movq    xmm0, qword [red_laser+ecx*8]; numero
         mov     rax, 1                  ;abbiamo usato un reistro xmm
-        ;call    printf                  
+        call    printf                  
 
         pop     rcx                     ; ripristiniamo il registro
         pop     rax                     ; ripristiniamo il registro
@@ -171,13 +171,11 @@ log_loop_red:
         xor     ecx,ecx
 log_loop_orange:
         ;logaritmo in base e 
-        fld1                            ;st0 = 1
-        fld qword [orange_laser+ecx*8]           ;st0 = x st1 = 1
+        fld qword [log_e2]              ;st0 = 1
+        fld qword [orange_laser+ecx*8]  ;st0 = x st1 = 1
         fyl2x                           ;st0 = log_2(x)        
-        fld qword [log_2e]              ;st0 = log_2(e), st1 = log_2(x)
-        fdivr st1                       ;st0 = log_2(x)/log_2(e)
         fstp qword [orange_laser+ecx*8]
-        fstp                            ;puliamo lo stack della fpu
+        ;fstp                            ;puliamo lo stack della fpu
 
         push    rax                     ; salviamo il registro
         push    rcx                     ; salviamo il registro
@@ -276,7 +274,7 @@ sum_x_y:
         mov     rdi, stampa_a_b               
         movq    xmm0,xmm7
         movq    xmm1,xmm8
-        mov     rax, 2                  ;abbiamo usato un reistro xmm
+        mov     rax, 2                  ;abbiamo usato due registri xmm
         call    printf         
 
         pop     rbx                     ; ripristino rbx
