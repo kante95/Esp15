@@ -1,4 +1,4 @@
-# Data Analysis with Assembly x64
+# Data Analysis with x64 Assembly
 
 This code was written for analyze the data of an optic experiment.
 It implements:
