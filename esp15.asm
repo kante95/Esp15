@@ -50,157 +50,66 @@ minus_one:
 
 
         section .text
-main:
-        push    rbx                     ; salviamo nello stack rbx
 
+;Print array routine, first argument in rdi, pointer to array base
+print_array:
+        push    rbp
+        push    rcx
+        
+        xor     rcx, rcx                ; rcx fa da contatore, azzeriamolo
+        mov     r12,rdi   
 
-        ;printa il primo messaggio
-        mov     rax, 1                  ; system call write
-        mov     rdi, 1                  ; standard output
-        mov     rsi, msg1               
-        mov     rdx, 18                 ; byte della stringa
-        ;syscall                         ; system call
-
-        xor     ecx, ecx                ; ecx fa da contatore, azzeriamolo
-
-print_red:
-        push    rax                     ; salviamo il registro
+print_loop:
         push    rcx                     ; salviamo il registro
 
         ;chiamata a printf
         mov     rdi, fmt                ; formato
-        movq    xmm0, qword [red_laser+8*ecx]; numero
+        movq    xmm0, [r12+8*rcx]; numero
         mov     rax, 1                  ;abbiamo usato un reistro xmm
-        ;call    printf                  
+        call    printf                  
 
         pop     rcx                     ; ripristiniamo il registro
-        pop     rax                     ; ripristiniamo il registro
 
         inc     ecx                     ; incrementiamo il contatore
         cmp     ecx,8                   ; loop su 8 elementi
-        ;jb     print_red                  ; jump se ecx<8
-
-        ;printa il secondo messaggio
-        mov     rax, 1                  ; system call write
-        mov     rdi, 1                  ; standard output
-        mov     rsi, msg2          
-        mov     rdx, 21                 ; byte della stringa
-        ;syscall                         ; system call
-
-        xor     ecx, ecx                 ; ecx fa da contatore, azzeriamolo
+        jb     print_loop                 ; jump se ecx<8
 
 
-print_orange:
-        push    rax                     ; salviamo il registro
-        push    rcx                     ; salviamo il registro
+        pop     rcx
+        pop     rbp
+        ret
+;---------------------------------------------------------------------
 
-        ;chiamata a printf
-        mov     rdi, fmt                ; formato
-        movq    xmm0, qword [orange_laser+8*ecx]; numero
-        mov     rax, 1                  ;abbiamo usato un reistro xmm
-        ;call    printf                  
-
-        pop     rcx                     ; ripristiniamo il registro
-        pop     rax                     ; ripristiniamo il registro
-
-        inc     ecx                     ; incrementiamo il contatore
-        cmp     ecx,8                   ; loop su 8 elementi
-        ;jb     print_orange             ; jump se ecx<8
-
-        ;printa il terzo messaggio
-        mov     rax, 1                  ; system call write
-        mov     rdi, 1                  ; standard output
-        mov     rsi, msg3         
-        mov     rdx, 15                 ; byte della stringa
-        ;syscall                         ; system call
+;Log of array routine, first argument in rdi, pointer to array base
+log:
+        push    rbp
+        push    rcx
 
         xor     ecx,ecx
+        mov     r12,rdi 
 
-print_conc:
-        push    rax                     ; salviamo il registro
-        push    rcx                     ; salviamo il registro
-
-        ;chiamata a printf
-        mov     rdi, fmt                ; formato
-        movq    xmm0, qword [concentrazioni+8*ecx]; numero
-        mov     rax, 1                  ;abbiamo usato un reistro xmm
-        ;call    printf                  
-
-        pop     rcx                     ; ripristiniamo il registro
-        pop     rax                     ; ripristiniamo il registro
-
-        inc     ecx                     ; incrementiamo il contatore
-        cmp     ecx,8                   ; loop su 8 elementi
-       ; jb     print_conc             ; jump se ecx<8
-
-
-; calcoli con la fpu
-        ;printa il quarto messaggio
-        ;mov     rax, 1                  ; system call write
-        ;mov     rdi, 1                  ; standard output
-        ;mov     rsi, msg4         
-        ;mov     rdx, 22                 ; byte della stringa
-        ;syscall                         ; system call
-
-        xor     ecx,ecx
-log_loop_red:
+log_loop:
         ;logaritmo in base e 
         fld qword [log_e2]              ;st0 = ln2
-        fld qword [red_laser+ecx*8]     ;st0 = x st1 = ln2
+        fld qword [r12+rcx*8]     ;st0 = x st1 = ln2
         fyl2x                           ;st0 = ln2*log_2(x)        
-        fstp qword [red_laser+ecx*8]
-        ;fstp                            ;puliamo lo stack della fpu
-
-        push    rax                     ; salviamo il registro
-        push    rcx                     ; salviamo il registro
-
-        ;stampa il risultato
-        mov     rdi, fmt                ; formato
-        movq    xmm0, qword [red_laser+ecx*8]; numero
-        mov     rax, 1                  ;abbiamo usato un reistro xmm
-        ;call    printf                  
-
-        pop     rcx                     ; ripristiniamo il registro
-        pop     rax                     ; ripristiniamo il registro
+        fstp qword [r12+rcx*8]
 
         inc     ecx                     ; incrementiamo il contatore
         cmp     ecx,8                   ; loop su 8 elementi
-        jb     log_loop_red            ; jump se ecx<8
+        jb     log_loop            ; jump se ecx<8
 
-;printa il quinto messaggio
-        ;mov     rax, 1                  ; system call write
-        ;mov     rdi, 1                  ; standard output
-        ;mov     rsi, msg5         
-        ;mov     rdx, 27                 ; byte della stringa
-        ;syscall                         ; system call
+        pop     rcx
+        pop     rbp
+        ret
+;--------------------------------------------------------------------
 
-        xor     ecx,ecx
-log_loop_orange:
-        ;logaritmo in base e 
-        fld qword [log_e2]              ;st0 = 1
-        fld qword [orange_laser+ecx*8]  ;st0 = x st1 = 1
-        fyl2x                           ;st0 = log_2(x)        
-        fstp qword [orange_laser+ecx*8]
-        ;fstp                            ;puliamo lo stack della fpu
+;Linear fitting y=a+bx, x value in rdi, a in xmm0, b in xmm1
+linear_regression:
+        push    rbp
+        push    rcx
 
-        push    rax                     ; salviamo il registro
-        push    rcx                     ; salviamo il registro
-
-        ;stampa il risultato
-        mov     rdi, fmt                ; formato
-        movq    xmm0, qword [orange_laser+ecx*8]; numero
-        mov     rax, 1                  ;abbiamo usato un reistro xmm
-;        call    printf                  
-
-        pop     rcx                     ; ripristiniamo il registro
-        pop     rax                     ; ripristiniamo il registro
-
-        inc     ecx                     ; incrementiamo il contatore
-        cmp     ecx,8                   ; loop su 8 elementi
-        jb     log_loop_orange            ; jump se ecx<8
-
-;Linear Fitting!!!!!!  RED LASER
-
+        mov     r12,rdi
         movsd xmm1, [eight]                  ;sum(w)
 
         xor ecx,ecx
@@ -214,7 +123,9 @@ sum_x_2:
         inc ecx
         cmp ecx,8
         jb sum_x_2
+
         ;xmm1 = sum(w),xmm0 = sum(x^2)
+
         xor ecx,ecx
         movsd xmm3,[zero]             ;somma parziale
 sum_x:
@@ -236,19 +147,19 @@ sum_x:
 
         xor ecx,ecx
         movsd xmm5,[zero]             ;somma parziale
-sum_red:
-        movsd xmm2,[red_laser+ecx*8]
+sum:
+        movsd xmm2,[r12+rcx*8]
         addsd xmm5,xmm2
         inc ecx
         cmp ecx,8
-        jb sum_red
+        jb sum
 
         ;xmm1 = sum(w),xmm0 = sum(x^2), xmm3 = sum(x), xmm4 = nabla xmm5 = sum(y)
 
         xor ecx,ecx
         movsd xmm6,[zero]
 sum_x_y:
-        movsd xmm2,[red_laser+ecx*8]
+        movsd xmm2,[r12+rcx*8]
         movsd xmm7,[concentrazioni+ecx*8]
         mulsd xmm2,xmm7
         addsd xmm6,xmm2
@@ -276,100 +187,99 @@ sum_x_y:
 
         ;xmm8 = b!  xmm7 = a! ;xmm1 = sum(w),xmm0 = sum(x^2), xmm3 = sum(x), xmm4 = nabla xmm5 = sum(y) xmm6 = sum(xy)
 
-        ;stampa il risultato
-        divsd   xmm8,[L]        ;k_red = abs(m_red / L)  
-        mulsd   xmm8,[minus_one] 
+        movq xmm0,xmm7
+        movq xmm1,xmm8
+
+        pop     rcx
+        pop     rbp
+        ret
+;-------------------------------------------------------------------------------------------------------------
+
+main:
+        push    rbx                     ; salviamo nello stack rbx
+        jmp     analisi                 ; se si vogoliono saltare la stampa dei dati
+
+
+print_debug_message:
+        ;printa il primo messaggio
+        mov     rax, 1                  ; system call write
+        mov     rdi, 1                  ; standard output
+        mov     rsi, msg1               
+        mov     rdx, 18                 ; byte della stringa
+        syscall                         ; system call
+
+        ;print array
+        lea     rdi,[red_laser]
+        call print_array
+        
+        ;printa il secondo messaggio
+        mov     rax, 1                  ; system call write
+        mov     rdi, 1                  ; standard output
+        mov     rsi, msg2          
+        mov     rdx, 21                 ; byte della stringa
+        syscall                         ; system call
+
+        ;print array
+        lea     rdi,[orange_laser]
+        call    print_array
+
+        ;printa il terzo messaggio
+        mov     rax, 1                  ; system call write
+        mov     rdi, 1                  ; standard output
+        mov     rsi, msg3         
+        mov     rdx, 15                 ; byte della stringa
+        syscall                         ; system call
+
+        ;print array
+        lea     rdi,[concentrazioni]
+        call    print_array
+
+        
+analisi:
+; calcoli del logaritmo
+        ;red laser
+        lea rdi,[red_laser]
+        call log
+
+        ;print array
+        ;lea     rdi,[red_laser]
+        ;call print_array
+
+        ;orange laser
+        lea rdi,[orange_laser]
+        call log
+
+        ;print array
+        ;lea     rdi,[orange_laser]
+        ;call print_array
+
+;linear regression
+        ;laser rosso
+        lea     rdi,[red_laser]
+        call linear_regression
+
+
+        ;calcolo di k
+        divsd   xmm1,[L]        ;k_red = abs(m_red / L)  
+        mulsd   xmm1,[minus_one] 
         mov     rdi, k_red          
-        movq    xmm0,xmm8
+        movq    xmm0,xmm1
         mov     rax, 1
         call    printf         
+        
+        ;orange laser
+        lea     rdi,[orange_laser]
+        call    linear_regression
 
 
-
-;Linear Fitting!!!!!! ORANGE LASER
-
-        movsd xmm1, [eight]                  ;sum(w)
-
-        xor ecx,ecx
-        movsd xmm0,[zero]                   ;somma parziale
-
-sum_x_2_orange:
-        movsd xmm2,[concentrazioni+ecx*8]
-        mulsd xmm2,xmm2                 ;x^2  
-        addsd xmm0,xmm2                 ;xxm0+=x^2
-
-        inc ecx
-        cmp ecx,8
-        jb sum_x_2_orange
-        ;xmm1 = sum(w),xmm0 = sum(x^2)
-        xor ecx,ecx
-        movsd xmm3,[zero]             ;somma parziale
-sum_x_orange:
-        movsd xmm2,[concentrazioni+ecx*8]
-        addsd xmm3,xmm2                 ;xxm0+=x^2
-        inc ecx
-        cmp ecx,8
-        jb sum_x_orange
-
-        ;xmm1 = sum(w),xmm0 = sum(x^2), xmm3 = sum(x)
-
-        movq xmm4,xmm0                  ;xmm4= sum(x^2) 
-        mulsd xmm4,xmm1                 ;xmm4= sum(w)*sum(x^2) 
-        movq xmm8,xmm3
-        mulsd xmm8,xmm3                 ;xmm3 = sum(x)^2
-        subsd xmm4,xmm8                 ;xmm4= sum(w)*sum(x^2) -sum(x)^2
-
-        ;xmm1 = sum(w),xmm0 = sum(x^2), xmm3 = sum(x), xmm4 = nabla
-
-        xor ecx,ecx
-        movsd xmm5,[zero]             ;somma parziale
-sum_orange:
-        movsd xmm2,[orange_laser+ecx*8]
-        addsd xmm5,xmm2
-        inc ecx
-        cmp ecx,8
-        jb sum_orange
-
-        ;xmm1 = sum(w),xmm0 = sum(x^2), xmm3 = sum(x), xmm4 = nabla xmm5 = sum(y)
-
-        xor ecx,ecx
-        movsd xmm6,[zero]
-sum_x_y_orange:
-        movsd xmm2,[orange_laser+ecx*8]
-        movsd xmm7,[concentrazioni+ecx*8]
-        mulsd xmm2,xmm7
-        addsd xmm6,xmm2
-        inc ecx
-        cmp ecx,8
-        jb sum_x_y_orange
-
-        ;xmm1 = sum(w),xmm0 = sum(x^2), xmm3 = sum(x), xmm4 = nabla xmm5 = sum(y) xmm6 = sum(xy)
-
-        movq xmm7,xmm0
-        mulsd xmm7,xmm5
-        movq xmm8,xmm3
-        mulsd xmm8,xmm6
-        subsd xmm7,xmm8
-        divsd xmm7,xmm4
-
-        ; xmm7 = a! ;xmm1 = sum(w),xmm0 = sum(x^2), xmm3 = sum(x), xmm4 = nabla xmm5 = sum(y) xmm6 = sum(xy)
-
-        movq xmm8,xmm1
-        mulsd xmm8,xmm6
-        movq xmm9,xmm5
-        mulsd xmm9,xmm3
-        subsd xmm8,xmm9
-        divsd xmm8,xmm4
-
-        ;xmm8 = b!  xmm7 = a! ;xmm1 = sum(w),xmm0 = sum(x^2), xmm3 = sum(x), xmm4 = nabla xmm5 = sum(y) xmm6 = sum(xy)
-
-        ;stampa il risultato
-        divsd   xmm8,[L]        ;k_red = abs(m_red / L)  
-        mulsd   xmm8,[minus_one] 
-        mov     rdi, k_orange          
-        movq    xmm0,xmm8
+        ;calcolo di k
+        divsd   xmm1,[L]        ;k_red = abs(m_red / L)  
+        mulsd   xmm1,[minus_one] 
+        mov     rdi, k_red          
+        movq    xmm0,xmm1
         mov     rax, 1
-        call    printf      
+        call    printf 
+
 
         pop     rbx                     ; ripristino rbx
         ret
